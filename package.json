@@ -1,0 +1,26 @@
+{
+  "name": "royalswingmasterbot",
+  "version": "1.0.0",
+  "description": "This is a open-source for Royal Swing Club Master Bot for Telegram.",
+  "author": "arsensokolov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/royalswing/royalswingmasterbot.git"
+  },
+  "keywords": [
+    "python",
+    "aws",
+    "lambda",
+    "serverless",
+    "telegram",
+    "bot"
+  ],
+  "bugs": {
+    "url": "https://github.com/royalswing/royalswingmasterbot/issues"
+  },
+  "homepage": "https://github.com/royalswing/royalswingmasterbot#readme",
+  "dependencies": {
+    "serverless-python-requirements": "^5.0.1"
+  }
+}
