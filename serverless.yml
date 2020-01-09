@@ -1,8 +1,10 @@
-service: serverless-telegram-bot
+service: royalswing-telegram-bot
 
 provider:
   name: aws
   runtime: python3.7
+  stage: dev
+  region: eu-west-3
   environment:
     TELEGRAM_TOKEN: ${file(./serverless.env.yml):TELEGRAM_TOKEN, ''}
 
