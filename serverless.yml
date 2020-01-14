@@ -7,6 +7,19 @@ provider:
   region: eu-west-3
   environment:
     TELEGRAM_TOKEN: ${file(./serverless.env.yml):TELEGRAM_TOKEN, ''}
+    TELEGRAM_IRKUTSK_CHAT_ID: ${file(./serverless.env.yml):TELEGRAM_IRKUTSK_CHAT_ID, ''}
+    TELEGRAM_ADMINS_CHAT_ID: ${file(./serverless.env.yml):TELEGRAM_ADMINS_CHAT_ID, ''}
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
 
 functions:
   webhook:
@@ -18,6 +31,30 @@ functions:
     handler: handler.set_webhook
     events:
       - http: POST /set_webhook
+
+  vk_callback:
+    handler: handler.vk_callback
+    events:
+      - http: POST /vk
+
+resources:
+  Resources:
+    RoyalSwingDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: chat_id
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: chat_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
 
 plugins:
   - serverless-python-requirements
