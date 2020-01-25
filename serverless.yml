@@ -10,6 +10,7 @@ provider:
     TELEGRAM_IRKUTSK_CHAT_ID: ${file(./serverless.env.yml):TELEGRAM_IRKUTSK_CHAT_ID, ''}
     TELEGRAM_ADMINS_CHAT_ID: ${file(./serverless.env.yml):TELEGRAM_ADMINS_CHAT_ID, ''}
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    ACHIEVEMENTS_TABLE: ${self:service}-achievements-${opt:stage, self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -20,6 +21,15 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.ACHIEVEMENTS_TABLE}"
 
 functions:
   webhook:
@@ -36,6 +46,46 @@ functions:
     handler: handler.vk_callback
     events:
       - http: POST /vk
+
+  achievements-create:
+    handler: achievements/create.create
+    events:
+      - http:
+          path: achievements
+          method: post
+          cors: true
+
+  achievements-list:
+    handler: achievements/list.list
+    events:
+      - http:
+          path: achievements
+          method: get
+          cors: true
+
+  achievements-get:
+    handler: achievements/get.get
+    events:
+      - http:
+          path: achievements/{id}
+          method: get
+          cors: true
+
+  achievements-update:
+    handler: achievements/update.update
+    events:
+      - http:
+          path: achievements/{id}
+          method: put
+          cors: true
+
+  achievements-delete:
+    handler: achievements/delete.delete
+    events:
+      - http:
+          path: achievements/{id}
+          method: delete
+          cors: true
 
 resources:
   Resources:
@@ -55,6 +105,22 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
+    RoyalSwingArchievementsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: user_id
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: user_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.ACHIEVEMENTS_TABLE}
 
 plugins:
   - serverless-python-requirements
